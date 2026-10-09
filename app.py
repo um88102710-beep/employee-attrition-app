@@ -58,4 +58,4 @@ if st.button("離職リスクを予測"):
     prediction = model.predict(input_df)
     probability = model.predict_proba(input_df)
 
-    confidence = probability.max() * 
+    confidence = probability.max() * 100
