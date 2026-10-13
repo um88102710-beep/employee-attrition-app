@@ -1,10 +1,48 @@
 
 import streamlit as st
 import pandas as pd
-import joblib
 
-model = joblib.load("model.pkl")
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestClassifier
 
+df = pd.read_csv(
+    "WA_Fn-UseC_-HR-Employee-Attrition.csv"
+)
+
+features = [
+    "Age",
+    "MonthlyIncome",
+    "DistanceFromHome",
+    "YearsAtCompany",
+    "JobLevel",
+    "OverTime"
+]
+
+X = df[features]
+y = df["Attrition"]
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        (
+            "ohe",
+            OneHotEncoder(handle_unknown="ignore"),
+            ["OverTime"]
+        )
+    ],
+    remainder="passthrough"
+)
+
+model = Pipeline([
+    ("prep", preprocessor),
+    ("rf", RandomForestClassifier(
+        n_estimators=100,
+        random_state=42
+    ))
+])
+
+model.fit(X, y)
 st.set_page_config(
     page_title="人材定着支援ダッシュボード",
     page_icon="📊"
