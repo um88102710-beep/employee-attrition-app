@@ -1,48 +1,9 @@
-
 import streamlit as st
 import pandas as pd
+import joblib
 
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.pipeline import Pipeline
-from sklearn.ensemble import RandomForestClassifier
+model = joblib.load("model.pkl")
 
-df = pd.read_csv(
-    "WA_Fn-UseC_-HR-Employee-Attrition.csv"
-)
-
-features = [
-    "Age",
-    "MonthlyIncome",
-    "DistanceFromHome",
-    "YearsAtCompany",
-    "JobLevel",
-    "OverTime"
-]
-
-X = df[features]
-y = df["Attrition"]
-
-preprocessor = ColumnTransformer(
-    transformers=[
-        (
-            "ohe",
-            OneHotEncoder(handle_unknown="ignore"),
-            ["OverTime"]
-        )
-    ],
-    remainder="passthrough"
-)
-
-model = Pipeline([
-    ("prep", preprocessor),
-    ("rf", RandomForestClassifier(
-        n_estimators=100,
-        random_state=42
-    ))
-])
-
-model.fit(X, y)
 st.set_page_config(
     page_title="人材定着支援ダッシュボード",
     page_icon="📊"
@@ -97,3 +58,10 @@ if st.button("離職リスクを予測"):
     probability = model.predict_proba(input_df)
 
     confidence = probability.max() * 100
+
+    st.subheader("予測結果")
+
+    if prediction[0] == "Yes":
+        st.error(f"離職リスク高 ({confidence:.1f}%)")
+    else:
+        st.success(f"離職リスク低 ({confidence:.1f}%)")
